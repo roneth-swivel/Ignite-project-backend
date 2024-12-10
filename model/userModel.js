@@ -1,5 +1,40 @@
 import mongoose from "mongoose";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - email
+ *         - phoneNumber
+ *         - gender
+ *       properties:
+ *         firstName:
+ *           type: string
+ *           description: User's first name
+ *           example: John
+ *         lastName:
+ *           type: string
+ *           description: User's last name
+ *           example: Doe
+ *         email:
+ *           type: string
+ *           description: User's email address
+ *           example: johndoe@example.com
+ *         phoneNumber:
+ *           type: string
+ *           description: User's phone number in Sri Lankan format
+ *           example: +94771234567
+ *         gender:
+ *           type: string
+ *           enum: ["M", "F"]
+ *           description: User's gender
+ *           example: M
+ */
 const employeeSchema = new mongoose.Schema({
   firstName: {
     type: String,
