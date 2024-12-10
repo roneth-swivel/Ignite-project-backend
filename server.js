@@ -1,20 +1,34 @@
 import express from "express";
-import cors from "cors"; // Import CORS package
-import userRoutes from "./routes/userRoutes.js"; // Assuming this is your route file
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+import bodyParser from "body-parser";
+import route from "./routes/userRoute.js";
+import setupSwagger from "./swagger/swaggerConfig.js";
 
+dotenv.config();
 const app = express();
 
-// Enable CORS for all routes (you can restrict it to specific origins)
-
+// Middleware
 app.use(cors());
+app.use(bodyParser.json());
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+// Swagger setup
+setupSwagger(app);
 
-// Use the user routes under the "/api" path
-app.use("/api", userRoutes);
+// Database Connection
+const PORT = process.env.PORT || 7000;
+const MONGO_URL = process.env.MONGO_URL;
 
-// Start the server
-app.listen(8000, () => {
-  console.log("Server is running on port 7000");
-});
+mongoose
+  .connect(MONGO_URL)
+  .then(() => {
+    console.log("DB connected successfully.");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port : ${PORT}`);
+    });
+  })
+  .catch((error) => console.log(error));
+
+// API Routes
+app.use("/api", route);
