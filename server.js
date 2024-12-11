@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
 import route from "./routes/userRoute.js";
-import setupSwagger from "./swagger/swaggerConfig.js";
+import setupSwagger from "./config/swaggerConfig.js";
 
 dotenv.config();
 const app = express();
@@ -25,7 +25,8 @@ mongoose
   .then(() => {
     console.log("DB connected successfully.");
     app.listen(PORT, () => {
-      console.log(`Server is running on port : ${PORT}`);
+      console.log(`Server is running on port : 7000`);
+      console.log(`Swagger docs available at http://localhost:7000/api-docs`);
     });
   })
   .catch((error) => console.log(error));
