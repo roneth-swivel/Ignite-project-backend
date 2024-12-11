@@ -48,15 +48,13 @@ export const create = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 2, limit = 10 } = req.query;
     const options = {
       page: parseInt(page),
       limit: parseInt(limit),
     };
 
-    const userData = await User.find()
-      .skip((options.page - 1) * options.limit)
-      .limit(options.limit);
+    const userData = await User.find();
 
     const total = await User.countDocuments();
 
