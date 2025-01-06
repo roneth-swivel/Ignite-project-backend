@@ -1,6 +1,6 @@
 import User from "../model/userModel.js";
 import * as UserService from "../services/userService.js";
-const logger = require("../utils/logger");
+import { logger } from "../utils/logger.js";
 
 /**
  * Create a new user
@@ -12,7 +12,7 @@ export const create = async (req, res) => {
     const createdUser = await UserService.create(req.body);
     return res.status(createdUser.statusCode).json(createdUser);
   } catch (error) {
-    logger.error("Create User Error", error);
+    logger.error(`Create User Error ${error}`);
 
     // Handle validation errors
     if (error.name === "ValidationError") {
@@ -36,27 +36,10 @@ export const create = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const { page = 2, limit = 10 } = req.query;
-    const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
-    };
-
-    const userData = await User.find();
-
-    const total = await User.countDocuments();
-
-    if (!userData || userData.length === 0) {
-      return res.status(404).json({ message: "No users found." });
-    }
-
-    res.status(200).json({
-      users: userData,
-      totalUsers: total,
-      currentPage: options.page,
-      totalPages: Math.ceil(total / options.limit),
-    });
+    const users = await UserService.getAllUsers(req.query);
+    return res.status(users.statusCode).json(users);
   } catch (error) {
+    logger.error(`User List Error ${error}`);
     res.status(500).json({
       message: "Internal Server Error",
       errorMessage: error.message,
@@ -71,13 +54,11 @@ export const getAllUsers = async (req, res) => {
  */
 export const getUserById = async (req, res) => {
   try {
-    const id = req.params.id;
-    const userExist = await User.findById(id);
-    if (!userExist) {
-      return res.status(404).json({ message: "User not found." });
-    }
-    res.status(200).json(userExist);
+    const users = await UserService.getUserById(req.params.id);
+    return res.status(users.statusCode).json(users.users);
   } catch (error) {
+    logger.error(`Get User By Id Error ${error}`);
+
     // Handle invalid ObjectId
     if (error.kind === "ObjectId") {
       return res.status(400).json({ message: "Invalid User ID format." });
@@ -96,45 +77,11 @@ export const getUserById = async (req, res) => {
  */
 export const update = async (req, res) => {
   try {
-    const id = req.params.id;
-    const userExist = await User.findById(id);
-    if (!userExist) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    // Prevent updating email or phone to an existing value
-    const { email, phoneNumber } = req.body;
-    if (email) {
-      const emailExists = await User.findOne({
-        email,
-        _id: { $ne: id },
-      });
-      if (emailExists) {
-        return res.status(400).json({ message: "Email already in use." });
-      }
-    }
-    if (phoneNumber) {
-      const phoneExists = await User.findOne({
-        phoneNumber,
-        _id: { $ne: id },
-      });
-      if (phoneExists) {
-        return res
-          .status(400)
-          .json({ message: "Phone number already in use." });
-      }
-    }
-
-    const updatedData = await User.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      message: "User updated successfully.",
-      user: updatedData,
-    });
+    const updatedUser = await UserService.update(req.params.id, req.body);
+    return res.status(updatedUser.statusCode).json(updatedUser);
   } catch (error) {
+    logger.error(`Update User Error ${error}`);
+
     // Handle validation errors
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => err.message);
@@ -157,14 +104,11 @@ export const update = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const id = req.params.id;
-    const userExist = await User.findById(id);
-    if (!userExist) {
-      return res.status(404).json({ message: "User not found." });
-    }
-    await User.findByIdAndDelete(id);
-    res.status(200).json({ message: "User deleted successfully." });
+    const deleteUser = await UserService.deleteUser(req.params.id);
+    return res.status(deleteUser.statusCode).json(deleteUser);
   } catch (error) {
+    logger.error(`Delete User Error ${error}`);
+
     // Handle invalid ObjectId
     if (error.kind === "ObjectId") {
       return res.status(400).json({ message: "Invalid User ID format." });
