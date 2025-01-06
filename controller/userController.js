@@ -1,4 +1,6 @@
 import User from "../model/userModel.js";
+import * as UserService from "../services/userService.js";
+const logger = require("../utils/logger");
 
 /**
  * Create a new user
@@ -7,25 +9,11 @@ import User from "../model/userModel.js";
  */
 export const create = async (req, res) => {
   try {
-    const newUser = new User(req.body);
-    const { email, phoneNumber } = newUser;
-
-    // Check for existing user by email or phone number
-    const userExist = await User.findOne({ $or: [{ email }, { phoneNumber }] });
-    if (userExist) {
-      const errorMessage =
-        userExist.email === email
-          ? "User with this email already exists."
-          : "User with this phone number already exists.";
-      return res.status(400).json({ message: errorMessage });
-    }
-
-    const savedData = await newUser.save();
-    res.status(201).json({
-      message: "User created successfully.",
-      userId: savedData._id,
-    });
+    const createdUser = await UserService.create(req.body);
+    return res.status(createdUser.statusCode).json(createdUser);
   } catch (error) {
+    logger.error("Create User Error", error);
+
     // Handle validation errors
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => err.message);
